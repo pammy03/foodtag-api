@@ -8,13 +8,11 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-// 1. ตั้งค่าเชื่อมต่อ Database
 const pool = new Pool({
-  user: "admin",
-  host: "localhost",
-  database: "foodtag",
-  password: "impactpassword123",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // จำเป็นต้องใส่บรรทัดนี้เพื่อให้ต่อกับ Supabase ได้
+  },
 });
 
 // 2. ฟังก์ชันสร้างตารางทั้งหมด และเพิ่มข้อมูลตัวอย่าง

@@ -5,7 +5,20 @@ const { Pool } = require("pg");
 const app = express();
 const port = 3000;
 
-app.use(cors());
+// ปรับแก้ตั้งค่า CORS ตรงนี้ครับ
+app.use(
+  cors({
+    origin: [
+      "https://foodtag-impact.onrender.com", // โดเมนหน้าบ้านของคุณ
+      "http://localhost:5500", // สำหรับตอนทดสอบด้วย Live Server
+      "http://127.0.0.1:5500",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
 
 const pool = new Pool({

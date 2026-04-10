@@ -70,6 +70,16 @@ const initDB = async () => {
       );
     `);
 
+    // 🆕 สร้างตารางเก็บรูปพื้นหลัง (เพิ่มใหม่)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS backgrounds (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        template_size VARCHAR(50) NOT NULL,
+        image_url TEXT NOT NULL
+      );
+    `);
+
     // 🆕 สร้างตารางเก็บโปรไฟล์แท็กที่เราจะบันทึก
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tag_profiles (
@@ -218,6 +228,8 @@ app.post("/api/tags/save", async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+// ดึงข้อมูล Templates
 app.get("/api/templates", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM templates ORDER BY id ASC");
@@ -226,6 +238,40 @@ app.get("/api/templates", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// 🆕 API: ดึงรูปพื้นหลังตามขนาด Template (เพิ่มใหม่)
+app.get("/api/backgrounds", async (req, res) => {
+  const { size } = req.query;
+  try {
+    let result;
+    if (size) {
+      result = await pool.query(
+        "SELECT * FROM backgrounds WHERE template_size = $1",
+        [size],
+      );
+    } else {
+      result = await pool.query("SELECT * FROM backgrounds");
+    }
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🆕 API: บันทึกรูปพื้นหลังใหม่ (เพิ่มใหม่)
+app.post("/api/backgrounds", async (req, res) => {
+  const { name, template_size, image_url } = req.body;
+  try {
+    await pool.query(
+      "INSERT INTO backgrounds (name, template_size, image_url) VALUES ($1, $2, $3)",
+      [name, template_size, image_url],
+    );
+    res.json({ success: true, message: "บันทึกพื้นหลังสำเร็จ" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // สั่งเปิดเซิร์ฟเวอร์
 app.listen(port, () => {
   console.log(`🚀 Backend รันอยู่บนพอร์ต ${port} (http://localhost:${port})`);
